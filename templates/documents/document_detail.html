@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del documento{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ document.original_name }}</h1>
+        <p class="text-muted mb-0">Detalle del documento cargado en el sistema.</p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="{% url 'document-download' document.pk %}" class="btn btn-dark">Descargar</a>
+        <a href="{% url 'document-list' %}" class="btn btn-outline-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Nombre original</h2>
+                <p>{{ document.original_name }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Tipo</h2>
+                <p>{{ document.get_document_type_display }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Cliente</h2>
+                <p>{{ document.client|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Propuesta</h2>
+                <p>{{ document.proposal|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Subido por</h2>
+                <p>{{ document.uploaded_by }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Fecha de carga</h2>
+                <p>{{ document.uploaded_at|date:"d/m/Y H:i" }}</p>
+            </div>
+
+            <div class="col-12">
+                <h2 class="h6 text-muted">Ruta del archivo</h2>
+                <p>{{ document.file.name }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

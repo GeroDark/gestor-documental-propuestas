@@ -27,6 +27,11 @@
                                 <a class="nav-link" href="{% url 'proposal-list' %}">Propuestas</a>
                             </li>
                         {% endif %}
+                        {% if perms.documents.view_document %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'document-list' %}">Documentos</a>
+                            </li>
+                        {% endif %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'profile' %}">Mi perfil</a>
                         </li>
