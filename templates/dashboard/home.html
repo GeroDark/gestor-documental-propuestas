@@ -3,39 +3,124 @@
 {% block title %}Panel principal{% endblock %}
 
 {% block content %}
-<div class="p-4 mb-4 bg-light rounded-3">
-    <div class="container-fluid py-2">
-        <h1 class="display-6">Sistema de Gestión Documental y Propuestas</h1>
-        <p class="lead mb-0">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Panel principal</h1>
+        <p class="text-muted mb-0">
             Bienvenido, {{ request.user.get_full_name|default:request.user.username }}.
         </p>
     </div>
 </div>
 
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Clientes</div>
+                <div class="display-6">{{ total_clients }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Propuestas</div>
+                <div class="display-6">{{ total_proposals }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">En revisión</div>
+                <div class="display-6">{{ proposals_in_review }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small">Por vencer</div>
+                <div class="display-6">{{ proposals_expiring }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4">
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h2 class="h5">Clientes</h2>
-                <p class="text-muted mb-0">Aquí iremos mostrando el módulo de clientes.</p>
+                <h2 class="h5 mb-3">Propuestas por estado</h2>
+                <ul class="list-group list-group-flush">
+                    {% for item in proposals_by_status %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ item.status }}</span>
+                            <strong>{{ item.total }}</strong>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No hay datos.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h2 class="h5">Propuestas</h2>
-                <p class="text-muted mb-0">Aquí iremos mostrando el módulo de propuestas.</p>
+                <h2 class="h5 mb-3">Propuestas por responsable</h2>
+                <ul class="list-group list-group-flush">
+                    {% for item in proposals_by_responsible %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ item.responsible__username }}</span>
+                            <strong>{{ item.total }}</strong>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No hay datos.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card shadow-sm">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h2 class="h5">Documentos</h2>
-                <p class="text-muted mb-0">Aquí iremos mostrando el módulo documental.</p>
+                <h2 class="h5 mb-3">Propuestas por vencer</h2>
+                <ul class="list-group list-group-flush">
+                    {% for proposal in expiring_proposals %}
+                        <li class="list-group-item">
+                            <div class="fw-semibold">{{ proposal.title }}</div>
+                            <div class="small text-muted">
+                                {{ proposal.client }} · {{ proposal.due_date|date:"d/m/Y" }}
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No hay propuestas por vencer esta semana.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Actividad reciente</h2>
+                <ul class="list-group list-group-flush">
+                    {% for audit in recent_audits %}
+                        <li class="list-group-item">
+                            <div class="fw-semibold">{{ audit.get_action_display }} · {{ audit.model_name }}</div>
+                            <div>{{ audit.description }}</div>
+                            <div class="small text-muted">
+                                {{ audit.user|default:"Sistema" }} · {{ audit.created_at|date:"d/m/Y H:i" }}
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No hay actividad registrada.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>

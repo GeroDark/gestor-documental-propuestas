@@ -6,6 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, FormView, ListView, UpdateView
 
+from apps.audit.services import log_audit
+
 from .forms import ProposalCommentForm, ProposalForm, ProposalStatusForm
 from .models import Comment, Proposal, ProposalStatusHistory
 
@@ -97,6 +99,13 @@ class ProposalCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
             changed_by=self.request.user,
         )
 
+        log_audit(
+            user=self.request.user,
+            action="create",
+            instance=self.object,
+            description=f"Se creó la propuesta '{self.object.title}'.",
+        )
+
         messages.success(self.request, "Propuesta creada correctamente.")
         return response
 
@@ -120,6 +129,20 @@ class ProposalUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
                 comment="Cambio de estado desde edición de propuesta.",
                 changed_by=self.request.user,
             )
+
+            log_audit(
+                user=self.request.user,
+                action="status_change",
+                instance=self.object,
+                description=f"La propuesta '{self.object.title}' cambió de estado de '{old_status}' a '{self.object.status}'.",
+            )
+
+        log_audit(
+            user=self.request.user,
+            action="update",
+            instance=self.object,
+            description=f"Se actualizó la propuesta '{self.object.title}'.",
+        )
 
         messages.success(self.request, "Propuesta actualizada correctamente.")
         return response
@@ -165,6 +188,13 @@ class ProposalStatusUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Form
                 changed_by=self.request.user,
             )
 
+            log_audit(
+                user=self.request.user,
+                action="status_change",
+                instance=self.proposal,
+                description=f"La propuesta '{self.proposal.title}' cambió de estado de '{previous_status}' a '{new_status}'.",
+            )
+
             messages.success(self.request, "Estado actualizado correctamente.")
         else:
             messages.info(self.request, "La propuesta ya tenía ese estado.")
@@ -184,8 +214,17 @@ class ProposalCommentCreateView(LoginRequiredMixin, PermissionRequiredMixin, Cre
     def form_valid(self, form):
         form.instance.proposal = self.proposal
         form.instance.user = self.request.user
+        response = super().form_valid(form)
+
+        log_audit(
+            user=self.request.user,
+            action="comment",
+            instance=self.proposal,
+            description=f"Se agregó un comentario a la propuesta '{self.proposal.title}'.",
+        )
+
         messages.success(self.request, "Comentario agregado correctamente.")
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         return reverse("proposal-detail", args=[self.proposal.pk])

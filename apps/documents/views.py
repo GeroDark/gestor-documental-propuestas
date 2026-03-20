@@ -5,6 +5,8 @@ from django.http import FileResponse, Http404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView
 
+from apps.audit.services import log_audit
+
 from .forms import DocumentForm
 from .models import Document
 
@@ -65,8 +67,17 @@ class DocumentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
     def form_valid(self, form):
         form.instance.uploaded_by = self.request.user
         form.instance.original_name = form.cleaned_data["file"].name
+        response = super().form_valid(form)
+
+        log_audit(
+            user=self.request.user,
+            action="create",
+            instance=self.object,
+            description=f"Se subió el documento '{self.object.original_name}'.",
+        )
+
         messages.success(self.request, "Documento subido correctamente.")
-        return super().form_valid(form)
+        return response
 
 
 class DocumentDownloadView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):

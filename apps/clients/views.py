@@ -4,6 +4,8 @@ from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from apps.audit.services import log_audit
+
 from .forms import ClientForm
 from .models import Client
 
@@ -73,8 +75,17 @@ class ClientCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+
+        log_audit(
+            user=self.request.user,
+            action="create",
+            instance=self.object,
+            description=f"Se creó el cliente '{self.object.business_name}'.",
+        )
+
         messages.success(self.request, "Cliente creado correctamente.")
-        return super().form_valid(form)
+        return response
 
 
 class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -85,8 +96,17 @@ class ClientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     success_url = reverse_lazy("client-list")
 
     def form_valid(self, form):
+        response = super().form_valid(form)
+
+        log_audit(
+            user=self.request.user,
+            action="update",
+            instance=self.object,
+            description=f"Se actualizó el cliente '{self.object.business_name}'.",
+        )
+
         messages.success(self.request, "Cliente actualizado correctamente.")
-        return super().form_valid(form)
+        return response
 
 
 class ClientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -97,5 +117,14 @@ class ClientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy("client-list")
 
     def form_valid(self, form):
+        client = self.get_object()
+
+        log_audit(
+            user=self.request.user,
+            action="delete",
+            instance=client,
+            description=f"Se eliminó el cliente '{client.business_name}'.",
+        )
+
         messages.success(self.request, "Cliente eliminado correctamente.")
         return super().form_valid(form)
