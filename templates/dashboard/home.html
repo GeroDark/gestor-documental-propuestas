@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Panel principal{% endblock %}
+
+{% block content %}
+<div class="p-4 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-2">
+        <h1 class="display-6">Sistema de Gestión Documental y Propuestas</h1>
+        <p class="lead mb-0">
+            Bienvenido, {{ request.user.get_full_name|default:request.user.username }}.
+        </p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Clientes</h2>
+                <p class="text-muted mb-0">Aquí iremos mostrando el módulo de clientes.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Propuestas</h2>
+                <p class="text-muted mb-0">Aquí iremos mostrando el módulo de propuestas.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Documentos</h2>
+                <p class="text-muted mb-0">Aquí iremos mostrando el módulo documental.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
