@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if object %}Editar cliente{% else %}Nuevo cliente{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="h4 mb-4">
+                    {% if object %}Editar cliente{% else %}Nuevo cliente{% endif %}
+                </h1>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-dark">Guardar</button>
+                        <a href="{% url 'client-list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

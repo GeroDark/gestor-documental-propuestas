@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Clientes</h1>
+        <p class="text-muted mb-0">Gestiona los clientes registrados en el sistema.</p>
+    </div>
+
+    {% if perms.clients.add_client %}
+        <a href="{% url 'client-create' %}" class="btn btn-dark">Nuevo cliente</a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Nombre / correo</label>
+                <input type="text" name="q" class="form-control" value="{{ filters.q }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">RUC / ID</label>
+                <input type="text" name="document_number" class="form-control" value="{{ filters.document_number }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Desde</label>
+                <input type="date" name="created_from" class="form-control" value="{{ filters.created_from }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Hasta</label>
+                <input type="date" name="created_to" class="form-control" value="{{ filters.created_to }}">
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-dark">Filtrar</button>
+                <a href="{% url 'client-list' %}" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Razón social</th>
+                    <th>RUC / ID</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                    <th>Creado por</th>
+                    <th>Fecha</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                    <tr>
+                        <td>{{ client.business_name }}</td>
+                        <td>{{ client.document_number }}</td>
+                        <td>{{ client.email }}</td>
+                        <td>{{ client.phone|default:"-" }}</td>
+                        <td>{{ client.get_status_display }}</td>
+                        <td>{{ client.created_by }}</td>
+                        <td>{{ client.created_at|date:"d/m/Y H:i" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'client-detail' client.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                            {% if perms.clients.change_client %}
+                                <a href="{% url 'client-update' client.pk %}" class="btn btn-sm btn-outline-dark">Editar</a>
+                            {% endif %}
+                            {% if perms.clients.delete_client %}
+                                <a href="{% url 'client-delete' client.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            No hay clientes registrados.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ filters.q }}&document_number={{ filters.document_number }}&status={{ filters.status }}&created_from={{ filters.created_from }}&created_to={{ filters.created_to }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ filters.q }}&document_number={{ filters.document_number }}&status={{ filters.status }}&created_from={{ filters.created_from }}&created_to={{ filters.created_to }}">Siguiente</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

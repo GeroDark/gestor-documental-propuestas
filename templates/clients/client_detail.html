@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del cliente{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ client.business_name }}</h1>
+        <p class="text-muted mb-0">Detalle del cliente registrado.</p>
+    </div>
+
+    <div class="d-flex gap-2">
+        {% if perms.clients.change_client %}
+            <a href="{% url 'client-update' client.pk %}" class="btn btn-dark">Editar</a>
+        {% endif %}
+        <a href="{% url 'client-list' %}" class="btn btn-outline-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Razón social</h2>
+                <p>{{ client.business_name }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">RUC / identificación</h2>
+                <p>{{ client.document_number }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Correo</h2>
+                <p>{{ client.email }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Teléfono</h2>
+                <p>{{ client.phone|default:"-" }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Dirección</h2>
+                <p>{{ client.address|default:"-" }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Estado</h2>
+                <p>{{ client.get_status_display }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Creado por</h2>
+                <p>{{ client.created_by }}</p>
+            </div>
+            <div class="col-md-6">
+                <h2 class="h6 text-muted">Fecha de registro</h2>
+                <p>{{ client.created_at|date:"d/m/Y H:i" }}</p>
+            </div>
+            <div class="col-12">
+                <h2 class="h6 text-muted">Observaciones</h2>
+                <p>{{ client.notes|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
