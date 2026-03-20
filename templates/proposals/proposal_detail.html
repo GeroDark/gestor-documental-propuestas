@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de propuesta{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{{ proposal.title }}</h1>
+        <p class="text-muted mb-0">Detalle y seguimiento de la propuesta.</p>
+    </div>
+
+    <div class="d-flex gap-2">
+        {% if perms.proposals.change_proposal %}
+            <a href="{% url 'proposal-update' proposal.pk %}" class="btn btn-dark">Editar</a>
+        {% endif %}
+        <a href="{% url 'proposal-list' %}" class="btn btn-outline-secondary">Volver</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Cliente</h2>
+                        <p>{{ proposal.client }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Responsable</h2>
+                        <p>{{ proposal.responsible }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Monto estimado</h2>
+                        <p>S/ {{ proposal.estimated_amount }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Fecha límite</h2>
+                        <p>{{ proposal.due_date|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Estado actual</h2>
+                        <p>{{ proposal.get_status_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 class="h6 text-muted">Creado por</h2>
+                        <p>{{ proposal.created_by }}</p>
+                    </div>
+                    <div class="col-12">
+                        <h2 class="h6 text-muted">Descripción</h2>
+                        <p>{{ proposal.description|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Comentarios</h2>
+
+                {% if perms.proposals.change_proposal %}
+                    <form method="post" action="{% url 'proposal-comment-create' proposal.pk %}" class="mb-4">
+                        {% csrf_token %}
+                        {{ comment_form.as_p }}
+                        <button type="submit" class="btn btn-dark">Agregar comentario</button>
+                    </form>
+                {% endif %}
+
+                {% for comment in comments %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ comment.user }}</strong>
+                            <small class="text-muted">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        <p class="mb-0 mt-2">{{ comment.content }}</p>
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">Todavía no hay comentarios.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Cambiar estado</h2>
+
+                {% if perms.proposals.change_proposal %}
+                    <form method="post" action="{% url 'proposal-change-status' proposal.pk %}">
+                        {% csrf_token %}
+                        {{ status_form.as_p }}
+                        <button type="submit" class="btn btn-dark w-100">Actualizar estado</button>
+                    </form>
+                {% else %}
+                    <p class="text-muted mb-0">No tienes permisos para cambiar el estado.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Historial de estados</h2>
+
+                {% for item in status_history %}
+                    <div class="border-start border-3 ps-3 mb-3">
+                        <div class="fw-semibold">{{ item.get_new_status_display }}</div>
+                        <div class="small text-muted">
+                            {{ item.changed_by }} · {{ item.changed_at|date:"d/m/Y H:i" }}
+                        </div>
+                        {% if item.previous_status %}
+                            <div class="small text-muted">
+                                Desde: {{ item.previous_status }}
+                            </div>
+                        {% endif %}
+                        {% if item.comment %}
+                            <div class="mt-1">{{ item.comment }}</div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">No hay historial registrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

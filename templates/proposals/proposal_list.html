@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Propuestas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Propuestas</h1>
+        <p class="text-muted mb-0">Gestiona propuestas comerciales y su seguimiento.</p>
+    </div>
+
+    {% if perms.proposals.add_proposal %}
+        <a href="{% url 'proposal-create' %}" class="btn btn-dark">Nueva propuesta</a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Título / cliente / descripción</label>
+                <input type="text" name="q" class="form-control" value="{{ filters.q }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Responsable</label>
+                <select name="responsible" class="form-select">
+                    <option value="">Todos</option>
+                    {% for user in responsible_users %}
+                        <option value="{{ user.id }}" {% if filters.responsible == user.id|stringformat:"s" %}selected{% endif %}>
+                            {{ user }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Vence desde</label>
+                <input type="date" name="due_from" class="form-control" value="{{ filters.due_from }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Vence hasta</label>
+                <input type="date" name="due_to" class="form-control" value="{{ filters.due_to }}">
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-dark">Filtrar</button>
+                <a href="{% url 'proposal-list' %}" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Título</th>
+                    <th>Cliente</th>
+                    <th>Responsable</th>
+                    <th>Monto</th>
+                    <th>Vence</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposal in proposals %}
+                    <tr>
+                        <td>{{ proposal.title }}</td>
+                        <td>{{ proposal.client }}</td>
+                        <td>{{ proposal.responsible }}</td>
+                        <td>S/ {{ proposal.estimated_amount }}</td>
+                        <td>{{ proposal.due_date|date:"d/m/Y" }}</td>
+                        <td>{{ proposal.get_status_display }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'proposal-detail' proposal.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                            {% if perms.proposals.change_proposal %}
+                                <a href="{% url 'proposal-update' proposal.pk %}" class="btn btn-sm btn-outline-dark">Editar</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            No hay propuestas registradas.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
