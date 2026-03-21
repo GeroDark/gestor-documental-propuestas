@@ -281,4 +281,4 @@ gestor-documental-propuestas/
 
 ## Autor
 
-Proyecto desarrollado por **GeroDark** como parte de su portafolio profesional de desarrollo backend/full stack con Django.
+Proyecto desarrollado por **GeroDark** **Walter Gerald Arzapalo Janampa** como parte de su portafolio profesional de desarrollo backend/full stack con Django.
