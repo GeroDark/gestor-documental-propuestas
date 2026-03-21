@@ -106,3 +106,59 @@ class ProposalStatusUpdateTests(BaseProposalTestData):
                 object_id=str(self.proposal.pk),
             ).exists()
         )
+
+class ProposalExportCsvTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="proposal_export_user",
+            email="proposal_export@example.com",
+            password="Test12345!",
+        )
+        self.user.user_permissions.add(Permission.objects.get(codename="view_proposal"))
+
+        self.client_obj = Client.objects.create(
+            business_name="Cliente Export Proposals SAC",
+            document_number="20444555666",
+            email="cliente-export-proposals@example.com",
+            phone="988777666",
+            address="Lima",
+            status=Client.Status.ACTIVE,
+            created_by=self.user,
+        )
+
+        Proposal.objects.create(
+            client=self.client_obj,
+            title="Propuesta En Revision",
+            description="Demo export CSV",
+            responsible=self.user,
+            estimated_amount=15000,
+            due_date=timezone.localdate(),
+            status=Proposal.Status.IN_REVIEW,
+            created_by=self.user,
+        )
+
+        Proposal.objects.create(
+            client=self.client_obj,
+            title="Propuesta Aprobada",
+            description="Demo export CSV",
+            responsible=self.user,
+            estimated_amount=25000,
+            due_date=timezone.localdate(),
+            status=Proposal.Status.APPROVED,
+            created_by=self.user,
+        )
+
+    def test_export_proposals_csv_respects_filters(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            reverse("proposal-export-csv"),
+            {"status": Proposal.Status.IN_REVIEW},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response["Content-Type"])
+
+        content = response.content.decode("utf-8-sig")
+        self.assertIn("Propuesta En Revision", content)
+        self.assertNotIn("Propuesta Aprobada", content)

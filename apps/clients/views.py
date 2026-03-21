@@ -1,7 +1,11 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db.models import Q
+from django.http import HttpResponse
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.audit.services import log_audit
@@ -58,6 +62,51 @@ class ClientListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         }
         return context
 
+class ClientExportCsvView(ClientListView):
+    paginate_by = None
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="clientes.csv"'
+        response.write("\ufeff")
+
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "ID",
+                "Razon social",
+                "RUC / ID",
+                "Correo",
+                "Telefono",
+                "Direccion",
+                "Estado",
+                "Notas",
+                "Creado por",
+                "Fecha de creacion",
+                "Fecha de actualizacion",
+            ]
+        )
+
+        for client in queryset:
+            writer.writerow(
+                [
+                    client.id,
+                    client.business_name,
+                    client.document_number,
+                    client.email,
+                    client.phone or "",
+                    client.address or "",
+                    client.get_status_display(),
+                    client.notes or "",
+                    client.created_by.username if client.created_by else "",
+                    client.created_at.strftime("%d/%m/%Y %H:%M"),
+                    client.updated_at.strftime("%d/%m/%Y %H:%M"),
+                ]
+            )
+
+        return response
 
 class ClientDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = Client

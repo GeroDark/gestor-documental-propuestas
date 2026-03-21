@@ -3,15 +3,25 @@
 {% block title %}Propuestas{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-        <h1 class="h3 mb-1">Propuestas</h1>
+        <h1 class="mb-1">Propuestas</h1>
         <p class="text-muted mb-0">Gestiona propuestas comerciales y su seguimiento.</p>
     </div>
 
-    {% if perms.proposals.add_proposal %}
-        <a href="{% url 'proposal-create' %}" class="btn btn-dark">Nueva propuesta</a>
-    {% endif %}
+    <div class="d-flex gap-2">
+        {% if perms.proposals.view_proposal %}
+            <a href="{% url 'proposal-export-csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success">
+                Exportar CSV
+            </a>
+        {% endif %}
+
+        {% if perms.proposals.add_proposal %}
+            <a href="{% url 'proposal-create' %}" class="btn btn-primary">
+                Nueva propuesta
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 <div class="card shadow-sm mb-4">

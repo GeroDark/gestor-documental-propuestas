@@ -1,7 +1,9 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, FormView, ListView, UpdateView
@@ -64,6 +66,51 @@ class ProposalListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         }
         return context
 
+class ProposalExportCsvView(ProposalListView):
+    paginate_by = None
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="propuestas.csv"'
+        response.write("\ufeff")
+
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "ID",
+                "Titulo",
+                "Cliente",
+                "Descripcion",
+                "Responsable",
+                "Monto estimado",
+                "Fecha de vencimiento",
+                "Estado",
+                "Creado por",
+                "Fecha de creacion",
+                "Fecha de actualizacion",
+            ]
+        )
+
+        for proposal in queryset:
+            writer.writerow(
+                [
+                    proposal.id,
+                    proposal.title,
+                    proposal.client.business_name if proposal.client else "",
+                    proposal.description or "",
+                    proposal.responsible.username if proposal.responsible else "",
+                    f"{proposal.estimated_amount:.2f}" if proposal.estimated_amount is not None else "",
+                    proposal.due_date.strftime("%d/%m/%Y") if proposal.due_date else "",
+                    proposal.get_status_display(),
+                    proposal.created_by.username if proposal.created_by else "",
+                    proposal.created_at.strftime("%d/%m/%Y %H:%M"),
+                    proposal.updated_at.strftime("%d/%m/%Y %H:%M"),
+                ]
+            )
+
+        return response
 
 class ProposalDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
     model = Proposal

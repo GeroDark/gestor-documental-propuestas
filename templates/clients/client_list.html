@@ -3,15 +3,25 @@
 {% block title %}Clientes{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-        <h1 class="h3 mb-1">Clientes</h1>
+        <h1 class="mb-1">Clientes</h1>
         <p class="text-muted mb-0">Gestiona los clientes registrados en el sistema.</p>
     </div>
 
-    {% if perms.clients.add_client %}
-        <a href="{% url 'client-create' %}" class="btn btn-dark">Nuevo cliente</a>
-    {% endif %}
+    <div class="d-flex gap-2">
+        {% if perms.clients.view_client %}
+            <a href="{% url 'client-export-csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-success">
+                Exportar CSV
+            </a>
+        {% endif %}
+
+        {% if perms.clients.add_client %}
+            <a href="{% url 'client-create' %}" class="btn btn-primary">
+                Nuevo cliente
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 <div class="card shadow-sm mb-4">
